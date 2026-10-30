@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 import models, schemas
 from auth import get_password_hash
 
@@ -26,8 +27,43 @@ def create_complaint(db: Session, complaint: schemas.ComplaintCreate, user_id: i
     db.refresh(db_complaint)
     return db_complaint
 
-def get_complaints_by_user(db: Session, user_id: int, skip: int = 0, limit: int = 100):
-    return db.query(models.Complaint).filter(models.Complaint.user_id == user_id).offset(skip).limit(limit).all()
+def get_first_incomplete_complaint_ids(db: Session, count: int = 3):
+    incomplete = or_(
+        models.Complaint.ai_category.is_(None),
+        models.Complaint.ai_category == "",
+        models.Complaint.ai_priority.is_(None),
+        models.Complaint.ai_priority == "",
+        models.Complaint.department.is_(None),
+        models.Complaint.department == "",
+    )
+    rows = (
+        db.query(models.Complaint.complaint_id)
+        .filter(incomplete)
+        .order_by(models.Complaint.complaint_id)
+        .limit(count)
+        .all()
+    )
+    return [row[0] for row in rows]
 
-def get_all_complaints(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Complaint).offset(skip).limit(limit).all()
+def get_complaints_by_user(
+    db: Session,
+    user_id: int,
+    skip: int = 0,
+    limit: int = 100,
+    exclude_ids: list[int] | None = None,
+):
+    query = db.query(models.Complaint).filter(models.Complaint.user_id == user_id)
+    if exclude_ids:
+        query = query.filter(~models.Complaint.complaint_id.in_(exclude_ids))
+    return query.offset(skip).limit(limit).all()
+
+def get_all_complaints(
+    db: Session,
+    skip: int = 0,
+    limit: int = 100,
+    exclude_ids: list[int] | None = None,
+):
+    query = db.query(models.Complaint)
+    if exclude_ids:
+        query = query.filter(~models.Complaint.complaint_id.in_(exclude_ids))
+    return query.offset(skip).limit(limit).all()

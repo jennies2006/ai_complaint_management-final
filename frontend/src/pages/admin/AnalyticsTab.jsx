@@ -38,7 +38,7 @@ export default function AnalyticsTab({ complaints, currentTime }) {
   ];
 
   return (
-    <div>
+    <div className="admin-tab admin-tab-analytics">
       <div className="flex justify-between items-center mb-8">
         <div>
           <h2 style={{ fontSize: '2rem', margin: 0 }}>Analytics</h2>
@@ -50,19 +50,19 @@ export default function AnalyticsTab({ complaints, currentTime }) {
         {/* Category Donut */}
         <div className="glass-card" style={{ padding: '2rem' }}>
           <h3 className="mb-4">Complaints by Category</h3>
-          <div style={{ height: '300px', position: 'relative' }}>
+          <div className="admin-category-chart" style={{ height: '300px', position: 'relative' }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={categoryData} innerRadius={80} outerRadius={110} paddingAngle={5} dataKey="value">
+                <Pie data={categoryData} innerRadius={54} outerRadius={78} paddingAngle={5} dataKey="value">
                   {categoryData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                 </Pie>
                 <Tooltip formatter={(value, name) => [`${value} (${Math.round(value/total*100)}%)`, name]} />
                 <Legend layout="vertical" verticalAlign="middle" align="right" />
               </PieChart>
             </ResponsiveContainer>
-            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+            <div className="admin-category-total" style={{ position: 'absolute', top: '50%', left: '30%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
               <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{total}</div>
-              <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Total</div>
+              <div style={{ fontSize: '0.875rem', color: '#405847' }}>Total</div>
             </div>
           </div>
         </div>
@@ -73,12 +73,12 @@ export default function AnalyticsTab({ complaints, currentTime }) {
           <div style={{ height: '300px' }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={priorityData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                <XAxis dataKey="name" stroke="var(--text-muted)" />
-                <YAxis stroke="var(--text-muted)" />
+                <XAxis dataKey="name" stroke="#405847" />
+                <YAxis stroke="#405847" />
                 <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} />
-                <Bar dataKey="count" fill="var(--primary)" radius={[4, 4, 0, 0]} label={{ position: 'top', fill: 'var(--text-primary)' }}>
+                <Bar dataKey="count" fill="var(--primary)" radius={[4, 4, 0, 0]} label={{ position: 'top', fill: '#183a2a' }}>
                   {priorityData.map((entry, index) => {
-                    const color = entry.name === 'Critical' ? '#ef4444' : entry.name === 'High' ? '#f59e0b' : entry.name === 'Medium' ? '#10b981' : '#6366f1';
+                    const color = entry.name === 'Critical' ? '#ef4444' : entry.name === 'High' ? '#f59e0b' : entry.name === 'Medium' ? '#3b82f6' : '#22a06b';
                     return <Cell key={`cell-${index}`} fill={color} />;
                   })}
                 </Bar>
@@ -102,8 +102,8 @@ export default function AnalyticsTab({ complaints, currentTime }) {
               </PieChart>
             </ResponsiveContainer>
             <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#10b981' }}>{resolutionRate}%</div>
-              <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Resolved</div>
+              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#183a2a' }}>{resolutionRate}%</div>
+              <div style={{ fontSize: '0.875rem', color: '#405847' }}>Resolved</div>
             </div>
           </div>
           

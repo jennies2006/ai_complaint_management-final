@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import ComplaintCard from '../../components/ComplaintCard';
-import { Search, Filter, Calendar } from 'lucide-react';
+import { Search, Filter } from 'lucide-react';
 import { hasExceededSla } from '../../utils/sla';
 
-export default function DashboardTab({ complaints, currentTime, goToAllComplaints }) {
+export default function DashboardTab({ complaints, currentTime, onOverride, goToAllComplaints }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
 
@@ -25,12 +25,9 @@ export default function DashboardTab({ complaints, currentTime, goToAllComplaint
   const recentComplaints = filteredComplaints.slice(0, 3);
 
   return (
-    <div>
+    <div className="admin-tab admin-tab-dashboard">
       <div className="flex justify-between items-center mb-8">
         <h2 style={{ fontSize: '2rem', margin: 0 }}>Welcome, Admin</h2>
-        <div className="btn btn-outline flex items-center gap-2">
-          <Calendar size={18} /> Date Range: Last 30 Days
-        </div>
       </div>
 
       <div className="grid grid-cols-5 gap-4 mb-8">
@@ -91,7 +88,7 @@ export default function DashboardTab({ complaints, currentTime, goToAllComplaint
         {recentComplaints.length === 0 ? (
           <p style={{ color: 'var(--text-muted)' }}>No complaints found.</p>
         ) : (
-          recentComplaints.map(c => <ComplaintCard key={c.id} complaint={c} role="AdminDashboard" currentTime={currentTime} />)
+          recentComplaints.map(c => <ComplaintCard key={c.id} complaint={c} role="Admin" currentTime={currentTime} onOverride={onOverride} />)
         )}
       </div>
     </div>

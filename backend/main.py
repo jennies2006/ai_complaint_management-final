@@ -228,11 +228,28 @@ def get_complaints(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
+    hidden_incomplete_ids = crud.get_first_incomplete_complaint_ids(db)
     if current_user.role == models.RoleEnum.ADMIN:
-        return crud.get_all_complaints(db, skip=skip, limit=limit)
+        return crud.get_all_complaints(
+            db,
+            skip=skip,
+            limit=limit,
+            exclude_ids=hidden_incomplete_ids,
+        )
     elif current_user.role == models.RoleEnum.STAFF:
-        return db.query(models.Complaint).filter(
+        query = db.query(models.Complaint).filter(
             models.Complaint.assigned_to == current_user.user_id
-        ).offset(skip).limit(limit).all()
+        )
+        if hidden_incomplete_ids:
+            query = query.filter(
+                ~models.Complaint.complaint_id.in_(hidden_incomplete_ids)
+            )
+        return query.offset(skip).limit(limit).all()
     else:
-        return crud.get_complaints_by_user(db, user_id=current_user.user_id, skip=skip, limit=limit)
+        return crud.get_complaints_by_user(
+            db,
+            user_id=current_user.user_id,
+            skip=skip,
+            limit=limit,
+            exclude_ids=hidden_incomplete_ids,
+        )

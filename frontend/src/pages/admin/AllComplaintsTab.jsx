@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ComplaintCard from '../../components/ComplaintCard';
 import { Search, Filter } from 'lucide-react';
 
-export default function AllComplaintsTab({ complaints, currentTime }) {
+export default function AllComplaintsTab({ complaints, currentTime, onOverride }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
 
@@ -39,7 +39,7 @@ export default function AllComplaintsTab({ complaints, currentTime }) {
   });
 
   return (
-    <div>
+    <div className="admin-tab admin-tab-complaints">
       <div className="flex justify-between items-center mb-8">
         <div>
           <h2 style={{ fontSize: '2rem', margin: 0 }}>All Complaints</h2>
@@ -78,7 +78,7 @@ export default function AllComplaintsTab({ complaints, currentTime }) {
         {sortedComplaints.length === 0 ? (
           <p style={{ color: 'var(--text-muted)' }}>No complaints found.</p>
         ) : (
-          sortedComplaints.map(c => <ComplaintCard key={c.id} complaint={c} role="AdminList" currentTime={currentTime} />)
+          sortedComplaints.map(c => <ComplaintCard key={c.id} complaint={c} role="Admin" currentTime={currentTime} onOverride={onOverride} />)
         )}
       </div>
     </div>

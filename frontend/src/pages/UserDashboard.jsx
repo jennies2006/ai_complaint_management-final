@@ -61,19 +61,19 @@ export default function UserDashboard() {
   };
 
   return (
-    <div className="animate-fade-in">
-      <div className="flex justify-between items-center mb-8">
+    <div className="animate-fade-in user-dashboard">
+      <div className="user-dashboard-heading">
         <div>
-          <h2 style={{ fontSize: '2rem' }}>My Complaints</h2>
+          <h2>My Complaints</h2>
           <p>Track and manage your submitted complaints.</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setIsSubmitting(!isSubmitting)}>
-          <PlusCircle size={18} /> New Complaint
+        <button className="btn btn-primary user-new-complaint" onClick={() => setIsSubmitting(!isSubmitting)}>
+          <PlusCircle size={16} /> New Complaint
         </button>
       </div>
 
       {isSubmitting && (
-        <div className="glass-card mb-8 animate-fade-in">
+        <div className="glass-card user-submit-panel mb-8 animate-fade-in">
           <h3>Submit a New Complaint</h3>
           <p className="mb-4">Our AI will automatically categorize and prioritize your issue to ensure rapid routing and resolution.</p>
           <textarea 
@@ -97,7 +97,7 @@ export default function UserDashboard() {
       ) : complaints.length === 0 ? (
         <p style={{ color: 'var(--text-muted)' }}>You haven't submitted any complaints yet.</p>
       ) : (
-        <div>
+        <div className="user-complaint-list">
           {complaints.map(c => <ComplaintCard key={c.id} complaint={c} role="User" currentTime={currentTime} />)}
         </div>
       )}

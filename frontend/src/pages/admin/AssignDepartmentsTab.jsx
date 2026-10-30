@@ -2,6 +2,15 @@ import React, { useState } from 'react';
 import { Search, Filter } from 'lucide-react';
 import { apiAssignComplaint } from '../../api';
 
+const DEPARTMENTS = [
+  'Logistics & Delivery',
+  'Payments & Refunds',
+  'Quality Assurance',
+  'Returns & Replacements',
+  'Seller Support',
+  'Technical Support'
+];
+
 export default function AssignDepartmentsTab({ complaints, staff, refresh }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPriority, setFilterPriority] = useState('All');
@@ -9,6 +18,7 @@ export default function AssignDepartmentsTab({ complaints, staff, refresh }) {
   
   const [innerTab, setInnerTab] = useState('Waiting'); // 'Waiting' | 'Assigned'
   const [selections, setSelections] = useState({});
+  const [departmentSelections, setDepartmentSelections] = useState({});
   const [reassigningId, setReassigningId] = useState(null);
   const [toastMsg, setToastMsg] = useState('');
 
@@ -34,13 +44,25 @@ export default function AssignDepartmentsTab({ complaints, staff, refresh }) {
     setSelections(prev => ({ ...prev, [complaintId]: staffId }));
   };
 
+  const handleDepartmentChange = (complaintId, department) => {
+    setDepartmentSelections(prev => ({ ...prev, [complaintId]: department }));
+  };
+
   const showToast = (msg) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(''), 5000);
   };
 
   const handleAssign = async (complaint) => {
-    const dept = complaint.department;
+    const isManualReview = complaint.department === 'Admin / Manual Review';
+    const dept = isManualReview
+      ? departmentSelections[complaint.id]
+      : complaint.department;
+    if (!dept || dept === 'Admin / Manual Review') {
+      alert('Choose a department before assigning this manual-review complaint.');
+      return;
+    }
+
     let staffId = selections[complaint.id];
     
     if (!staffId) {
@@ -67,6 +89,11 @@ export default function AssignDepartmentsTab({ complaints, staff, refresh }) {
       }
       
       setReassigningId(null);
+      setDepartmentSelections(prev => {
+        const next = { ...prev };
+        delete next[complaint.id];
+        return next;
+      });
       refresh();
     } catch (err) {
       alert('Failed to assign');
@@ -85,7 +112,9 @@ export default function AssignDepartmentsTab({ complaints, staff, refresh }) {
 
   const renderComplaintCard = (c, isAssigned) => {
     const deptStaff = getStaffForDepartment(c.department);
+    const isManualReview = c.department === 'Admin / Manual Review';
     let selectedStaffId = selections[c.id];
+    const selectedDepartment = departmentSelections[c.id] || '';
     
     if (!selectedStaffId && !isAssigned && deptStaff.length > 0) {
       selectedStaffId = deptStaff[0].user_id;
@@ -106,6 +135,9 @@ export default function AssignDepartmentsTab({ complaints, staff, refresh }) {
           <div className="flex items-center gap-1">
             <strong>Category:</strong> {c.category}
           </div>
+          <div className="flex items-center gap-1">
+            <strong>Department:</strong> {c.department || 'Not assigned'}
+          </div>
         </div>
 
         {c.previous_assigned_to && (
@@ -116,6 +148,22 @@ export default function AssignDepartmentsTab({ complaints, staff, refresh }) {
 
         {!isAssigned && (
           <div className="flex gap-4 items-end">
+            {isManualReview && (
+              <div style={{ flex: 1 }}>
+                <label htmlFor={`department-${c.id}`} style={{ fontSize: '0.75rem' }}>Choose Department</label>
+                <select
+                  id={`department-${c.id}`}
+                  value={selectedDepartment}
+                  onChange={e => handleDepartmentChange(c.id, e.target.value)}
+                  style={{ margin: 0, fontSize: '0.875rem', padding: '0.5rem' }}
+                >
+                  <option value="">-- Choose Department --</option>
+                  {DEPARTMENTS.map(department => (
+                    <option key={department} value={department}>{department}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div style={{ flex: 1 }}>
               <label style={{ fontSize: '0.75rem' }}>Staff Member</label>
               <select value={selectedStaffId || ''} onChange={e => handleStaffChange(c.id, e.target.value)} style={{ margin: 0, fontSize: '0.875rem', padding: '0.5rem' }}>
@@ -140,12 +188,31 @@ export default function AssignDepartmentsTab({ complaints, staff, refresh }) {
                 <button className="btn btn-outline" style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem' }} onClick={() => {
                   setReassigningId(c.id);
                   setSelections(prev => ({...prev, [c.id]: c.assigned_to}));
+                  if (isManualReview) {
+                    setDepartmentSelections(prev => ({ ...prev, [c.id]: '' }));
+                  }
                 }}>Reassign</button>
               )}
             </div>
             
             {reassigningId === c.id && (
               <div className="flex gap-4 items-end mt-2 p-3" style={{ background: 'rgba(0,0,0,0.2)', borderRadius: '6px' }}>
+                {isManualReview && (
+                  <div style={{ flex: 1 }}>
+                    <label htmlFor={`reassign-department-${c.id}`} style={{ fontSize: '0.75rem' }}>Choose Department</label>
+                    <select
+                      id={`reassign-department-${c.id}`}
+                      value={selectedDepartment}
+                      onChange={e => handleDepartmentChange(c.id, e.target.value)}
+                      style={{ margin: 0, fontSize: '0.875rem', padding: '0.5rem' }}
+                    >
+                      <option value="">-- Choose Department --</option>
+                      {DEPARTMENTS.map(department => (
+                        <option key={department} value={department}>{department}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <div style={{ flex: 1 }}>
                   <label style={{ fontSize: '0.75rem' }}>New Staff Member</label>
                   <select value={selectedStaffId || ''} onChange={e => handleStaffChange(c.id, e.target.value)} style={{ margin: 0, fontSize: '0.875rem', padding: '0.5rem' }}>
@@ -188,7 +255,7 @@ export default function AssignDepartmentsTab({ complaints, staff, refresh }) {
   const displayList = innerTab === 'Waiting' ? getFilteredList(waitingList) : getFilteredList(assignedList);
 
   return (
-    <div>
+    <div className="admin-tab admin-tab-assignment">
       <div className="flex justify-between items-center mb-8">
         <div>
           <h2 style={{ fontSize: '2rem', margin: 0 }}>Assign Departments</h2>

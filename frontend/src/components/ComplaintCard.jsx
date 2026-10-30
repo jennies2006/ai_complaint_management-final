@@ -22,14 +22,15 @@ export default function ComplaintCard({ complaint, role, onOverride, onResolve, 
       default: return 'badge-pending';
     }
   };
+  const statusBadge = `badge-${(complaint.status || '').toLowerCase().replace(/\s+/g, '-')}`;
 
   return (
-    <div className="glass-card mb-4 flex flex-col gap-4" style={{ border: isSlaExceeded ? '1px solid var(--danger)' : '' }}>
-      <div className="flex justify-between items-center">
+    <div className={`glass-card mb-4 flex flex-col gap-4 complaint-card${role === 'User' ? ' complaint-card-user' : ''}${role === 'Staff' ? ' complaint-card-staff' : ''}${role === 'Admin' ? ' complaint-card-admin' : ''}`} style={{ border: isSlaExceeded ? '1px solid var(--danger)' : '' }}>
+      <div className="flex justify-between items-center complaint-card-heading">
         <div className="flex gap-4 items-center">
           <h3 style={{ margin: 0 }}>Complaint #{complaint.id}</h3>
           <span className={`badge ${getPriorityBadge(complaint.priority)}`}>{complaint.priority} Priority</span>
-          <span className="badge badge-pending">{complaint.status}</span>
+          <span className={`badge ${statusBadge}`}>{complaint.status}</span>
         </div>
         {isSlaExceeded && (
           <div className="flex items-center gap-1" style={{ color: 'var(--danger)', fontSize: '0.875rem', fontWeight: 500 }}>
@@ -39,10 +40,10 @@ export default function ComplaintCard({ complaint, role, onOverride, onResolve, 
         )}
       </div>
       
-      <p style={{ color: 'var(--text-primary)' }}>{complaint.text}</p>
+      <p className="complaint-card-text" style={{ color: 'var(--text-primary)' }}>{complaint.text}</p>
       
-      <div className="flex justify-between items-center mt-2 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
-        <div className="flex gap-6">
+      <div className="flex justify-between items-center mt-2 pt-4 complaint-card-footer" style={{ borderTop: '1px solid var(--border)' }}>
+        <div className="flex gap-6 complaint-card-details">
           <div className="flex items-center gap-2" style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
             <TrendingUp size={16} color="var(--primary)" /> 
             <span><strong>Category:</strong> {complaint.category}</span>
@@ -60,7 +61,7 @@ export default function ComplaintCard({ complaint, role, onOverride, onResolve, 
         </div>
         
         {role === 'Admin' && (
-          <button className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }} onClick={() => onOverride(complaint)}>
+          <button type="button" className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }} onClick={() => onOverride(complaint)}>
             Override AI
           </button>
         )}

@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function ManageStaffTab({ staff, goToAssignDepartments }) {
   return (
-    <div>
+    <div className="admin-tab admin-tab-staff">
       <div className="flex justify-between items-center mb-8">
         <div>
           <h2 style={{ fontSize: '2rem', margin: 0 }}>Manage Staff</h2>
